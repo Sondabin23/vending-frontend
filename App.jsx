@@ -70,12 +70,11 @@ export default function App() {
     }
   }, []);
 
-  // 🚨 수정된 부분 1: 백엔드로 토스 결제 최종 승인 요청을 보내는 함수
+  // 🚨 수정 완료: 백엔드로 토스 결제 최종 승인 요청을 보내는 함수 (경로 명시)
   const confirmTossPayment = async (paymentKey, orderId, amount) => {
     setLoading(true);
     try {
-      // ✅ 진짜 Render 서버 주소로 변경됨! (이 부분의 URL을 본인의 것으로 꼭 수정하세요!)
-      const response = await fetch('https://vending-backend-qlb7.onrender.com', {
+      const response = await fetch('https://vending-backend-qlb7.onrender.com/api/toss/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentKey, orderId, amount }),
@@ -97,13 +96,12 @@ export default function App() {
     }
   };
 
-  // 🚨 수정된 부분 2: 카카오페이 요청 로직
+  // 🚨 수정 완료: 카카오페이 요청 로직 (경로 명시)
   const requestKakaoPay = async () => {
     setLoading(true);
     const DOMAIN = window.location.origin; 
     try {
-      // ✅ 진짜 Render 서버 주소로 변경됨! (여기도 본인의 주소로 수정하세요!)
-      const response = await fetch('https://vending-backend-qlb7.onrender.com', {
+      const response = await fetch('https://vending-backend-qlb7.onrender.com/api/payment/ready', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
