@@ -96,11 +96,11 @@ export default function App() {
     }
   };
 
-  // 🚨 수정 완료: 카카오페이 요청 로직 (경로 명시)
   const requestKakaoPay = async () => {
     setLoading(true);
     const DOMAIN = window.location.origin; 
     try {
+      // ⭐️ 주의: 아래 주소의 따옴표 안쪽 시작과 끝에 절대 띄어쓰기가 없어야 합니다!
       const response = await fetch('https://vending-backend-qlb7.onrender.com/api/payment/ready', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
