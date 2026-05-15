@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-// 🆕 [토스페이 추가] 토스페이먼츠 SDK 임포트
 import { loadTossPayments } from '@tosspayments/payment-sdk';
 
-// 🎨 스타일 코드
+// 🎨 스타일 코드 (기존 동일 + 관리자 폼 스타일 추가)
 const styles = {
   container: { display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F9F9FB', fontFamily: 'sans-serif', margin: 0, padding: 0 },
   content: { width: '100%', maxWidth: '800px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
@@ -25,65 +24,96 @@ const styles = {
   payButton: { flex: '1 1 150px', padding: '20px', borderRadius: '15px', border: 'none', fontSize: '18px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' },
   cancelButton: { marginTop: '30px', background: 'none', border: 'none', fontSize: '18px', color: '#9094A6', textDecoration: 'underline', cursor: 'pointer' },
   successEmoji: { fontSize: '80px', margin: '0 0 20px 0' },
-  homeButton: { marginTop: '40px', backgroundColor: '#2D3142', color: '#FFF', padding: '20px 40px', borderRadius: '15px', border: 'none', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }
+  homeButton: { marginTop: '40px', backgroundColor: '#2D3142', color: '#FFF', padding: '20px 40px', borderRadius: '15px', border: 'none', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' },
+  // 관리자 폼 스타일
+  adminSection: { marginTop: '50px', padding: '20px', backgroundColor: '#E0E5EC', borderRadius: '15px', width: '100%' },
+  adminInput: { padding: '10px', margin: '5px', borderRadius: '5px', border: '1px solid #ccc' }
 };
 
-// 📦 자판기 상품 데이터
 const CATEGORIES = ['전체', '포토카드', '키링', '인형'];
-const GOODS = [
-  { id: '1', name: '홀로그램 포카 세트', price: 1, stock: 15, category: '포토카드' },
-  { id: '2', name: '투명 미공포', price: 3000, stock: 0, category: '포토카드' },
-  { id: '3', name: '아크릴 키링', price: 8000, stock: 5, category: '키링' },
-  { id: '4', name: '메탈 스트랩 키링', price: 9500, stock: 3, category: '키링' },
-  { id: '5', name: '10cm 솜인형', price: 15000, stock: 10, category: '인형' },
-  { id: '6', name: '20cm 공식 인형', price: 25000, stock: 2, category: '인형' },
-];
+const BACKEND_URL = 'https://vending-backend-qlb7.onrender.com';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Home');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [loading, setLoading] = useState(false);
+  
+  // 🆕 DB 연동 상태
+  const [products, setProducts] = useState([]);
+  const [newProduct, setNewProduct] = useState({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
 
-  // 🔄 URL 감지 및 토스페이 결제 최종 승인 처리
+  // 🔄 1. DB에서 상품 목록 가져오기
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/products`);
+      const data = await res.json();
+      setProducts(data);
+    } catch (e) {
+      console.error("상품 불러오기 실패:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // 🔄 2. 결제 완료 후 DB 재고 차감 요청 함수
+  const processPurchaseDB = async (productId) => {
+    try {
+      await fetch(`${BACKEND_URL}/api/purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: productId })
+      });
+      fetchProducts(); // 재고 갱신
+    } catch (e) {
+      console.error("DB 재고 차감 실패:", e);
+    }
+  };
+
+  // 🔄 URL 감지 및 결제 최종 승인 처리
   useEffect(() => {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
     
-    // 🆕 토스 결제 후 돌아오면 URL에 이런 값들이 붙어 있습니다.
     const paymentKey = urlParams.get('paymentKey');
     const orderId = urlParams.get('orderId');
     const amount = urlParams.get('amount');
 
     if (path.includes('/success')) {
+      const pendingProductId = localStorage.getItem('pending_product_id');
+
       if (paymentKey) {
-        // 🆕 토스페이먼츠는 프론트로 돌아온 후 서버로 최종 승인 요청을 보내야 합니다.
-        confirmTossPayment(paymentKey, orderId, amount);
+        confirmTossPayment(paymentKey, orderId, amount, pendingProductId);
       } else {
-        // 카카오페이 등 일반적인 성공 처리
+        // 카카오페이 등 성공 처리
+        if (pendingProductId) processPurchaseDB(pendingProductId);
         setCurrentScreen('Success');
+        localStorage.removeItem('pending_product_id');
         window.history.pushState({}, '', '/'); 
       }
     } else if (path.includes('/cancel') || path.includes('/fail')) {
       alert("결제가 취소되었거나 실패했습니다.");
+      localStorage.removeItem('pending_product_id');
       window.history.pushState({}, '', '/');
     }
   }, []);
 
-  // 🚨 수정 완료: 백엔드로 토스 결제 최종 승인 요청을 보내는 함수 (경로 명시)
-  const confirmTossPayment = async (paymentKey, orderId, amount) => {
+  const confirmTossPayment = async (paymentKey, orderId, amount, pendingProductId) => {
     setLoading(true);
     try {
-      const response = await fetch('https://vending-backend-qlb7.onrender.com/api/toss/confirm', {
+      const response = await fetch(`${BACKEND_URL}/api/toss/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentKey, orderId, amount }),
       });
-      const result = await response.json();
-
+      
       if (response.ok) {
+        if (pendingProductId) await processPurchaseDB(pendingProductId); // 🆕 결제 성공 시 DB 갱신
         setCurrentScreen('Success');
       } else {
+        const result = await response.json();
         alert(`토스 결제 승인 실패: ${result.message}`);
         setCurrentScreen('Home');
       }
@@ -92,16 +122,18 @@ export default function App() {
       setCurrentScreen('Home');
     } finally {
       setLoading(false);
-      window.history.pushState({}, '', '/'); // URL 깔끔하게 정리
+      localStorage.removeItem('pending_product_id');
+      window.history.pushState({}, '', '/'); 
     }
   };
 
   const requestKakaoPay = async () => {
     setLoading(true);
+    // 🆕 리다이렉트 전 어떤 상품을 사는지 기억
+    localStorage.setItem('pending_product_id', selectedProduct.product_id); 
     const DOMAIN = window.location.origin; 
     try {
-      // ⭐️ 주의: 아래 주소의 따옴표 안쪽 시작과 끝에 절대 띄어쓰기가 없어야 합니다!
-      const response = await fetch('https://vending-backend-qlb7.onrender.com/api/payment/ready', {
+      const response = await fetch(`${BACKEND_URL}/api/payment/ready`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,13 +149,9 @@ export default function App() {
       if (response.ok) {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         const redirectUrl = isMobile ? result.next_redirect_mobile_url : result.next_redirect_pc_url;
-        if (redirectUrl) {
-          window.location.href = redirectUrl; 
-        } else {
-          alert('결제창 주소를 받아오지 못했습니다.');
-        }
+        if (redirectUrl) window.location.href = redirectUrl; 
       } else {
-        alert(`결제 에러: ${result.message || '알 수 없는 오류'}`);
+        alert(`결제 에러: ${result.message}`);
       }
     } catch (e) {
       alert(`통신 에러: ${e.toString()}`);
@@ -132,17 +160,16 @@ export default function App() {
     }
   };
 
-  // 🆕 토스페이 결제창 띄우기 로직
   const requestTossPay = async () => {
     setLoading(true);
+    // 🆕 리다이렉트 전 어떤 상품을 사는지 기억
+    localStorage.setItem('pending_product_id', selectedProduct.product_id); 
     const DOMAIN = window.location.origin;
 
     try {
-      // 1. 발급받은 클라이언트 키로 초기화
       const clientKey = 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq'; 
       const tossPayments = await loadTossPayments(clientKey);
 
-      // 2. 결제창 호출
       await tossPayments.requestPayment('토스페이', {
         amount: selectedProduct.price,
         orderId: 'TOSS_' + new Date().getTime(), 
@@ -152,13 +179,17 @@ export default function App() {
         failUrl: `${DOMAIN}/fail`,
       });
     } catch (error) {
-      if (error.code === 'USER_CANCEL') {
-        alert('사용자가 결제를 취소했습니다.');
-      } else {
-        alert(`결제 창 호출 에러: ${error.message}`);
-      }
+      if (error.code === 'USER_CANCEL') alert('사용자가 결제를 취소했습니다.');
       setLoading(false);
     }
+  };
+
+  // 🆕 오프라인/RFID 직접 결제 (바로 DB 차감)
+  const handleDirectPay = async () => {
+    setLoading(true);
+    await processPurchaseDB(selectedProduct.product_id);
+    setCurrentScreen('Success');
+    setLoading(false);
   };
 
   const handleSelectProduct = (product) => {
@@ -173,11 +204,32 @@ export default function App() {
     setSelectedCategory('전체');
   };
 
-  const filteredGoods = selectedCategory === '전체' ? GOODS : GOODS.filter(g => g.category === selectedCategory);
+  // 🆕 관리자 상품 등록 핸들러
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    try {
+      await fetch(`${BACKEND_URL}/api/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newProduct,
+          price: parseInt(newProduct.price),
+          stock: parseInt(newProduct.stock)
+        })
+      });
+      alert('상품이 등록되었습니다!');
+      setNewProduct({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
+      fetchProducts();
+    } catch (e) {
+      alert('등록 실패');
+    }
+  };
+
+  // 기존 정적 GOODS 대신 DB에서 가져온 products 사용
+  const filteredGoods = selectedCategory === '전체' ? products : products.filter(g => g.category === selectedCategory);
 
   return (
     <div style={styles.container}>
-      {/* 1. 홈 화면 (상품 목록) */}
       {currentScreen === 'Home' && (
         <div style={styles.content}>
           <h1 style={styles.headerTitle}>✨ 굿즈 자판기 ✨</h1>
@@ -198,21 +250,37 @@ export default function App() {
           <div style={styles.gridContainer}>
             {filteredGoods.map(item => (
               <div 
-                key={item.id} 
+                key={item.product_id} 
                 style={item.stock <= 0 ? { ...styles.productCard, ...styles.soldOutCard } : styles.productCard}
                 onClick={() => handleSelectProduct(item)}
               >
-                <div style={styles.categoryBadge}>{item.category}</div>
+                <div style={styles.categoryBadge}>{item.category || '기타'}</div>
                 <h3 style={styles.productName}>{item.name}</h3>
                 <p style={styles.productPrice}>{item.price.toLocaleString()}원</p>
                 {item.stock <= 0 && <p style={styles.soldOutText}>품절</p>}
               </div>
             ))}
           </div>
+
+          {/* 🆕 관리자용 상품 추가 폼 (실제 배포 시엔 숨기거나 비밀번호 연동 추천) */}
+          <div style={styles.adminSection}>
+            <h3 style={{marginTop: 0}}>🛠 상품 DB 등록 (관리자)</h3>
+            <form onSubmit={handleAddProduct}>
+              <input style={styles.adminInput} placeholder="슬롯(예: A1)" value={newProduct.slot_number} onChange={(e) => setNewProduct({...newProduct, slot_number: e.target.value})} required/>
+              <input style={styles.adminInput} placeholder="상품명" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} required/>
+              <input style={styles.adminInput} type="number" placeholder="가격" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} required/>
+              <input style={styles.adminInput} type="number" placeholder="재고" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} required/>
+              <select style={styles.adminInput} value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}>
+                <option value="포토카드">포토카드</option>
+                <option value="키링">키링</option>
+                <option value="인형">인형</option>
+              </select>
+              <button type="submit" style={{padding: '10px 20px', borderRadius: '5px', cursor: 'pointer'}}>DB 저장</button>
+            </form>
+          </div>
         </div>
       )}
 
-      {/* 2. 결제 대기 화면 */}
       {currentScreen === 'Payment' && selectedProduct && (
         <div style={styles.content}>
           <h1 style={styles.headerTitle}>결제 진행 💳</h1>
@@ -225,29 +293,14 @@ export default function App() {
           <p style={styles.subTitle}>결제 방식을 선택해주세요</p>
 
           <div style={styles.buttonRow}>
-            {/* 기존 카카오페이 버튼 */}
-            <button 
-              style={{ ...styles.payButton, backgroundColor: '#FEE500', color: '#000' }} 
-              onClick={requestKakaoPay} 
-              disabled={loading}
-            >
+            <button style={{ ...styles.payButton, backgroundColor: '#FEE500', color: '#000' }} onClick={requestKakaoPay} disabled={loading}>
               {loading ? '준비 중...' : '💬 카카오페이'}
             </button>
-            
-            {/* 🆕 토스페이 버튼 */}
-            <button 
-              style={{ ...styles.payButton, backgroundColor: '#3182F6', color: '#FFF' }} 
-              onClick={requestTossPay} 
-              disabled={loading}
-            >
+            <button style={{ ...styles.payButton, backgroundColor: '#3182F6', color: '#FFF' }} onClick={requestTossPay} disabled={loading}>
               {loading ? '준비 중...' : '🔵 토스페이'}
             </button>
-
-            {/* 기존 RFID 버튼 */}
-            <button 
-              style={{ ...styles.payButton, backgroundColor: '#FF6B6B', color: '#FFF' }} 
-              onClick={() => setCurrentScreen('Success')}
-            >
+            {/* 기존 카드결제를 다이렉트 처리(DB 차감)로 연결 */}
+            <button style={{ ...styles.payButton, backgroundColor: '#FF6B6B', color: '#FFF' }} onClick={handleDirectPay} disabled={loading}>
               🏷️ 카드결제
             </button>
           </div>
@@ -258,7 +311,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. 결제 성공 화면 */}
       {currentScreen === 'Success' && (
         <div style={styles.content}>
           <div style={styles.successEmoji}>🎉</div>
