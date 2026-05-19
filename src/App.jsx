@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
 
-// 🎨 스타일 코드 (기존 동일 + 관리자 폼 스타일 추가)
+// 🎨 스타일 코드
 const styles = {
   container: { display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F9F9FB', fontFamily: 'sans-serif', margin: 0, padding: 0 },
   content: { width: '100%', maxWidth: '800px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
@@ -25,7 +25,6 @@ const styles = {
   cancelButton: { marginTop: '30px', background: 'none', border: 'none', fontSize: '18px', color: '#9094A6', textDecoration: 'underline', cursor: 'pointer' },
   successEmoji: { fontSize: '80px', margin: '0 0 20px 0' },
   homeButton: { marginTop: '40px', backgroundColor: '#2D3142', color: '#FFF', padding: '20px 40px', borderRadius: '15px', border: 'none', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' },
-  // 관리자 폼 스타일
   adminSection: { marginTop: '50px', padding: '20px', backgroundColor: '#E0E5EC', borderRadius: '15px', width: '100%' },
   adminInput: { padding: '10px', margin: '5px', borderRadius: '5px', border: '1px solid #ccc' }
 };
@@ -39,11 +38,11 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [loading, setLoading] = useState(false);
   
-  // 🆕 DB 연동 상태
+  // DB 연동 상태
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
 
-  // 🔄 1. DB에서 상품 목록 가져오기
+  // 1. DB에서 상품 목록 가져오기
   const fetchProducts = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/products`);
@@ -58,7 +57,7 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  // 🔄 2. 결제 완료 후 DB 재고 차감 요청 함수
+  // 2. 결제 완료 후 DB 재고 차감 요청 함수
   const processPurchaseDB = async (productId) => {
     try {
       await fetch(`${BACKEND_URL}/api/purchase`, {
@@ -72,7 +71,7 @@ export default function App() {
     }
   };
 
-  // 🔄 URL 감지 및 결제 최종 승인 처리
+  // URL 감지 및 결제 최종 승인 처리
   useEffect(() => {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
@@ -110,7 +109,7 @@ export default function App() {
       });
       
       if (response.ok) {
-        if (pendingProductId) await processPurchaseDB(pendingProductId); // 🆕 결제 성공 시 DB 갱신
+        if (pendingProductId) await processPurchaseDB(pendingProductId); 
         setCurrentScreen('Success');
       } else {
         const result = await response.json();
@@ -129,7 +128,6 @@ export default function App() {
 
   const requestKakaoPay = async () => {
     setLoading(true);
-    // 🆕 리다이렉트 전 어떤 상품을 사는지 기억
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
     const DOMAIN = window.location.origin; 
     try {
@@ -162,7 +160,6 @@ export default function App() {
 
   const requestTossPay = async () => {
     setLoading(true);
-    // 🆕 리다이렉트 전 어떤 상품을 사는지 기억
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
     const DOMAIN = window.location.origin;
 
@@ -184,7 +181,7 @@ export default function App() {
     }
   };
 
-  // 🆕 오프라인/RFID 직접 결제 (바로 DB 차감)
+  // 오프라인/RFID 직접 결제 (바로 DB 차감)
   const handleDirectPay = async () => {
     setLoading(true);
     await processPurchaseDB(selectedProduct.product_id);
@@ -204,11 +201,11 @@ export default function App() {
     setSelectedCategory('전체');
   };
 
-  // 🆕 관리자 상품 등록 핸들러
+  // 🛠️ 수정된 부분: 관리자 상품 등록 핸들러 (진짜 에러 감지 로직 추가)
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
-      await fetch(`${BACKEND_URL}/api/products`, {
+      const response = await fetch(`${BACKEND_URL}/api/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -217,15 +214,21 @@ export default function App() {
           stock: parseInt(newProduct.stock)
         })
       });
-      alert('상품이 등록되었습니다!');
-      setNewProduct({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
-      fetchProducts();
+
+      const result = await response.json(); 
+
+      if (response.ok) {
+        alert('✅ 상품이 성공적으로 등록되었습니다!');
+        setNewProduct({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
+        fetchProducts(); // 성공했을 때만 목록 새로고침
+      } else {
+        alert(`❌ 등록 실패: ${result.error || '알 수 없는 DB 오류'}`);
+      }
     } catch (e) {
-      alert('등록 실패');
+      alert(`통신 실패: 백엔드 서버에 연결할 수 없습니다. (${e.message})`);
     }
   };
 
-  // 기존 정적 GOODS 대신 DB에서 가져온 products 사용
   const filteredGoods = selectedCategory === '전체' ? products : products.filter(g => g.category === selectedCategory);
 
   return (
@@ -262,7 +265,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* 🆕 관리자용 상품 추가 폼 (실제 배포 시엔 숨기거나 비밀번호 연동 추천) */}
           <div style={styles.adminSection}>
             <h3 style={{marginTop: 0}}>🛠 상품 DB 등록 (관리자)</h3>
             <form onSubmit={handleAddProduct}>
@@ -299,7 +301,6 @@ export default function App() {
             <button style={{ ...styles.payButton, backgroundColor: '#3182F6', color: '#FFF' }} onClick={requestTossPay} disabled={loading}>
               {loading ? '준비 중...' : '🔵 토스페이'}
             </button>
-            {/* 기존 카드결제를 다이렉트 처리(DB 차감)로 연결 */}
             <button style={{ ...styles.payButton, backgroundColor: '#FF6B6B', color: '#FFF' }} onClick={handleDirectPay} disabled={loading}>
               🏷️ 카드결제
             </button>
