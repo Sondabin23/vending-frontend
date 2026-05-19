@@ -229,7 +229,23 @@ export default function App() {
     }
   };
 
-  const filteredGoods = selectedCategory === '전체' ? products : products.filter(g => g.category === selectedCategory);
+  // 🆕 slot_number 값을 읽어서 한글 카테고리로 변환해주는 함수
+  const getCategoryFromSlot = (slotNumber) => {
+    if (!slotNumber) return '기타';
+    
+    // 소문자로 변환해서 검사 (대소문자 실수 방지)
+    const slot = slotNumber.toLowerCase(); 
+    
+    if (slot.includes('photo')) return '포토카드';
+    if (slot.includes('key')) return '키링';
+    if (slot.includes('doll')) return '인형';
+    return '기타'; // 위 단어들이 안 들어가 있으면 '기타'로 분류
+  };
+
+  // 🆕 선택된 카테고리에 맞춰 slot_number 기준으로 상품 필터링
+  const filteredGoods = selectedCategory === '전체' 
+    ? products 
+    : products.filter(item => getCategoryFromSlot(item.slot_number) === selectedCategory);
 
   return (
     <div style={styles.container}>
@@ -257,7 +273,9 @@ export default function App() {
                 style={item.stock <= 0 ? { ...styles.productCard, ...styles.soldOutCard } : styles.productCard}
                 onClick={() => handleSelectProduct(item)}
               >
-                <div style={styles.categoryBadge}>{item.category || '기타'}</div>
+                {/* 🛠️ 이 부분을 DB의 category 대신 getCategoryFromSlot 함수를 쓰도록 변경 */}
+                <div style={styles.categoryBadge}>{getCategoryFromSlot(item.slot_number)}</div>
+                
                 <h3 style={styles.productName}>{item.name}</h3>
                 <p style={styles.productPrice}>{item.price.toLocaleString()}원</p>
                 {item.stock <= 0 && <p style={styles.soldOutText}>품절</p>}
