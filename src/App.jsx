@@ -286,7 +286,7 @@ export default function App() {
           <div style={styles.adminSection}>
             <h3 style={{marginTop: 0}}>🛠 상품 DB 등록 (관리자)</h3>
             <form onSubmit={handleAddProduct}>
-              <input style={styles.adminInput} placeholder="슬롯(예: A1)" value={newProduct.slot_number} onChange={(e) => setNewProduct({...newProduct, slot_number: e.target.value})} required/>
+              <input style={styles.adminInput} placeholder="슬롯(key,doll,photo)" value={newProduct.slot_number} onChange={(e) => setNewProduct({...newProduct, slot_number: e.target.value})} required/>
               <input style={styles.adminInput} placeholder="상품명" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} required/>
               <input style={styles.adminInput} type="number" placeholder="가격" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} required/>
               <input style={styles.adminInput} type="number" placeholder="재고" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} required/>
