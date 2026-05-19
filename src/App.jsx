@@ -42,7 +42,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
 
-  // 1. DB에서 상품 목록 가져오기
+  // 🔄 1. DB에서 상품 목록 가져오기 (절대 지우면 안 되는 핵심 코드)
   const fetchProducts = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/products`);
@@ -57,7 +57,7 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  // 2. 결제 완료 후 DB 재고 차감 요청 함수
+  // 🔄 2. 결제 완료 후 DB 재고 차감 요청 함수
   const processPurchaseDB = async (productId) => {
     try {
       await fetch(`${BACKEND_URL}/api/purchase`, {
@@ -71,7 +71,7 @@ export default function App() {
     }
   };
 
-  // URL 감지 및 결제 최종 승인 처리
+  // 🔄 URL 감지 및 결제 최종 승인 처리
   useEffect(() => {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
@@ -86,7 +86,6 @@ export default function App() {
       if (paymentKey) {
         confirmTossPayment(paymentKey, orderId, amount, pendingProductId);
       } else {
-        // 카카오페이 등 성공 처리
         if (pendingProductId) processPurchaseDB(pendingProductId);
         setCurrentScreen('Success');
         localStorage.removeItem('pending_product_id');
@@ -181,7 +180,6 @@ export default function App() {
     }
   };
 
-  // 오프라인/RFID 직접 결제 (바로 DB 차감)
   const handleDirectPay = async () => {
     setLoading(true);
     await processPurchaseDB(selectedProduct.product_id);
@@ -201,7 +199,7 @@ export default function App() {
     setSelectedCategory('전체');
   };
 
-  // 🛠️ 수정된 부분: 관리자 상품 등록 핸들러 (진짜 에러 감지 로직 추가)
+  // 🛠️ 진짜 에러를 화면에 띄워주도록 수정된 관리자 상품 등록 핸들러
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
@@ -218,10 +216,12 @@ export default function App() {
       const result = await response.json(); 
 
       if (response.ok) {
+        // 서버에서 성공 신호(200)를 받았을 때만 알림 띄우고 목록 새로고침
         alert('✅ 상품이 성공적으로 등록되었습니다!');
         setNewProduct({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
-        fetchProducts(); // 성공했을 때만 목록 새로고침
+        fetchProducts(); 
       } else {
+        // 백엔드에서 에러가 터졌으면 사용자에게 알려줌
         alert(`❌ 등록 실패: ${result.error || '알 수 없는 DB 오류'}`);
       }
     } catch (e) {
