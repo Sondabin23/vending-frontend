@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
 
-// 🎨 스타일 코드
+// 🎨 스타일 객체 전체 정의
 const styles = {
   container: { display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F9F9FB', fontFamily: 'sans-serif', margin: 0, padding: 0 },
   content: { width: '100%', maxWidth: '800px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
@@ -31,6 +31,7 @@ const styles = {
 
 const CATEGORIES = ['전체', '포토카드', '키링', '인형'];
 const BACKEND_URL = 'https://vending-backend-qlb7.onrender.com';
+const MACHINE_ID = 'VENDING_01'; // 🌟 현재 자판기의 고유 식별 ID
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Home');
@@ -38,11 +39,10 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [loading, setLoading] = useState(false);
   
-  // DB 연동 상태
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
 
-  // 🔄 1. DB에서 상품 목록 가져오기 (절대 지우면 안 되는 핵심 코드)
+  // 🔄 1. DB에서 상품 목록 가져오기
   const fetchProducts = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/products`);
@@ -57,13 +57,16 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  // 🔄 2. 결제 완료 후 DB 재고 차감 요청 함수
+  // 🔄 2. 결제 완료 후 DB 재고 차감 및 기기 배출 요청 함수
   const processPurchaseDB = async (productId) => {
     try {
       await fetch(`${BACKEND_URL}/api/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: productId })
+        body: JSON.stringify({ 
+          product_id: productId,
+          machine_id: MACHINE_ID // 🌟 백엔드로 자판기 ID를 전달하여 해당 기기로 신호를 보내도록 함
+        })
       });
       fetchProducts(); // 재고 갱신
     } catch (e) {
@@ -199,7 +202,6 @@ export default function App() {
     setSelectedCategory('전체');
   };
 
-  // 🛠️ 진짜 에러를 화면에 띄워주도록 수정된 관리자 상품 등록 핸들러
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
@@ -216,12 +218,10 @@ export default function App() {
       const result = await response.json(); 
 
       if (response.ok) {
-        // 서버에서 성공 신호(200)를 받았을 때만 알림 띄우고 목록 새로고침
         alert('✅ 상품이 성공적으로 등록되었습니다!');
         setNewProduct({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
         fetchProducts(); 
       } else {
-        // 백엔드에서 에러가 터졌으면 사용자에게 알려줌
         alert(`❌ 등록 실패: ${result.error || '알 수 없는 DB 오류'}`);
       }
     } catch (e) {
@@ -229,20 +229,15 @@ export default function App() {
     }
   };
 
-  // 🆕 slot_number 값을 읽어서 한글 카테고리로 변환해주는 함수
   const getCategoryFromSlot = (slotNumber) => {
     if (!slotNumber) return '기타';
-    
-    // 소문자로 변환해서 검사 (대소문자 실수 방지)
     const slot = slotNumber.toLowerCase(); 
-    
     if (slot.includes('photo')) return '포토카드';
     if (slot.includes('key')) return '키링';
     if (slot.includes('doll')) return '인형';
-    return '기타'; // 위 단어들이 안 들어가 있으면 '기타'로 분류
+    return '기타';
   };
 
-  // 🆕 선택된 카테고리에 맞춰 slot_number 기준으로 상품 필터링
   const filteredGoods = selectedCategory === '전체' 
     ? products 
     : products.filter(item => getCategoryFromSlot(item.slot_number) === selectedCategory);
@@ -273,9 +268,7 @@ export default function App() {
                 style={item.stock <= 0 ? { ...styles.productCard, ...styles.soldOutCard } : styles.productCard}
                 onClick={() => handleSelectProduct(item)}
               >
-                {/* 🛠️ 이 부분을 DB의 category 대신 getCategoryFromSlot 함수를 쓰도록 변경 */}
                 <div style={styles.categoryBadge}>{getCategoryFromSlot(item.slot_number)}</div>
-                
                 <h3 style={styles.productName}>{item.name}</h3>
                 <p style={styles.productPrice}>{item.price.toLocaleString()}원</p>
                 {item.stock <= 0 && <p style={styles.soldOutText}>품절</p>}
