@@ -13,7 +13,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
 
-  // 🔄 DB에서 상품 목록 가져오기
+  // 🔄 DB 상품 목록 가져오기
   const fetchProducts = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/products`);
@@ -28,7 +28,7 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  // 🔄 결제 완료 후 DB 재고 차감 및 기기 배출 요청 함수
+  // 🔄 DB 재고 차감 및 기기 배출 요청
   const processPurchaseDB = async (productId, slotNumber) => {
     try {
       await fetch(`${BACKEND_URL}/api/purchase`, {
@@ -46,7 +46,7 @@ export default function App() {
     }
   };
 
-  // 🔄 URL 감지 및 결제 최종 승인 처리
+  // 🔄 URL 감지 및 결제 처리
   useEffect(() => {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
@@ -62,9 +62,7 @@ export default function App() {
       if (paymentKey) {
         confirmTossPayment(paymentKey, orderId, amount, pendingProductId, pendingSlotNumber);
       } else {
-        if (pendingProductId && pendingSlotNumber) {
-          processPurchaseDB(pendingProductId, pendingSlotNumber);
-        }
+        if (pendingProductId && pendingSlotNumber) processPurchaseDB(pendingProductId, pendingSlotNumber);
         setCurrentScreen('Success');
         localStorage.removeItem('pending_product_id');
         localStorage.removeItem('pending_slot_number');
@@ -88,13 +86,10 @@ export default function App() {
       });
       
       if (response.ok) {
-        if (pendingProductId && pendingSlotNumber) {
-          await processPurchaseDB(pendingProductId, pendingSlotNumber); 
-        }
+        if (pendingProductId && pendingSlotNumber) await processPurchaseDB(pendingProductId, pendingSlotNumber); 
         setCurrentScreen('Success');
       } else {
-        const result = await response.json();
-        alert(`토스 결제 승인 실패: ${result.message}`);
+        alert("토스 결제 승인 실패");
         setCurrentScreen('Home');
       }
     } catch (e) {
@@ -112,7 +107,6 @@ export default function App() {
     setLoading(true);
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
     localStorage.setItem('pending_slot_number', selectedProduct.slot_number); 
-    const DOMAIN = window.location.origin; 
     try {
       const response = await fetch(`${BACKEND_URL}/api/payment/ready`, {
         method: 'POST',
@@ -121,46 +115,36 @@ export default function App() {
           itemName: selectedProduct.name,
           price: selectedProduct.price,
           quantity: 1, 
-          domain: DOMAIN
+          domain: window.location.origin
         }),
       });
-
       const result = await response.json();
-      
       if (response.ok) {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        const redirectUrl = isMobile ? result.next_redirect_mobile_url : result.next_redirect_pc_url;
-        if (redirectUrl) window.location.href = redirectUrl; 
+        window.location.href = isMobile ? result.next_redirect_mobile_url : result.next_redirect_pc_url; 
       } else {
         alert(`결제 에러: ${result.message}`);
       }
     } catch (e) {
-      alert(`통신 에러: ${e.toString()}`);
-    } finally {
-      setLoading(false);
-    }
+      alert(`통신 에러`);
+    } finally { setLoading(false); }
   };
 
   const requestTossPay = async () => {
     setLoading(true);
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
     localStorage.setItem('pending_slot_number', selectedProduct.slot_number); 
-    const DOMAIN = window.location.origin;
-
     try {
-      const clientKey = 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq'; 
-      const tossPayments = await loadTossPayments(clientKey);
-
+      const tossPayments = await loadTossPayments('test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq');
       await tossPayments.requestPayment('토스페이', {
         amount: selectedProduct.price,
         orderId: 'TOSS_' + new Date().getTime(), 
         orderName: selectedProduct.name,
-        customerName: '자판기 고객',
-        successUrl: `${DOMAIN}/success`, 
-        failUrl: `${DOMAIN}/fail`,
+        customerName: '고객',
+        successUrl: `${window.location.origin}/success`, 
+        failUrl: `${window.location.origin}/fail`,
       });
     } catch (error) {
-      if (error.code === 'USER_CANCEL') alert('사용자가 결제를 취소했습니다.');
       setLoading(false);
     }
   };
@@ -178,35 +162,35 @@ export default function App() {
     setCurrentScreen('Payment');
   };
 
-  const handleReset = () => {
-    setSelectedProduct(null);
-    setCurrentScreen('Home');
-    setSelectedCategory('전체');
-  };
-
   const filteredGoods = selectedCategory === '전체' 
     ? products 
     : products.filter(item => item.category === selectedCategory);
 
   return (
     <div className="container">
+      
+      {/* 고정 헤더 */}
+      <div className="header">
+        <h1 className="header-title">Vending.Machine</h1>
+      </div>
+
       {currentScreen === 'Home' && (
-        <div className="content">
-          <h1 className="header-title">✨ 굿즈 자판기 ✨</h1>
-          <p className="sub-title">원하시는 굿즈를 선택해주세요</p>
-          
-          <div className="category-wrapper">
+        <>
+          {/* 인스타그램 스토리 영역 (카테고리) */}
+          <div className="story-wrapper">
             {CATEGORIES.map(cat => (
-              <button 
-                key={cat} 
-                className={`category-button ${selectedCategory === cat ? 'category-button-active' : ''}`}
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat}
-              </button>
+              <div key={cat} className="story-item" onClick={() => setSelectedCategory(cat)}>
+                <div className={`story-ring ${selectedCategory === cat ? 'active' : ''}`}>
+                  <div className="story-circle">
+                    {cat === '전체' ? 'ALL' : cat.substring(0, 2)}
+                  </div>
+                </div>
+                <span className="story-text">{cat}</span>
+              </div>
             ))}
           </div>
 
+          {/* 인스타그램 피드 영역 (상품 목록) */}
           <div className="grid-container">
             {filteredGoods.map(item => (
               <div 
@@ -214,59 +198,56 @@ export default function App() {
                 className={`product-card ${item.stock <= 0 ? 'sold-out-card' : ''}`}
                 onClick={() => handleSelectProduct(item)}
               >
-                {/* 좌측 상단: 카테고리 뱃지 */}
-                <div className="category-badge">{item.category}</div>
+                <div className="card-header">
+                  <div className="card-avatar">{item.category.substring(0, 1)}</div>
+                  <span className="card-username">{item.category}_official</span>
+                </div>
                 
-                <h3 className="product-name">{item.name}</h3>
-                <p className="product-price">{item.price.toLocaleString()}원</p>
+                <div className="card-image">
+                  {item.name}
+                </div>
                 
-                {/* 재고가 없으면 품절 표시, 있으면 우측 하단에 재고 수량 뱃지 표시 */}
-                {item.stock <= 0 ? (
-                  <p className="sold-out-text">품절</p>
-                ) : (
-                  <div className="stock-badge">남은 수량: {item.stock}개</div>
-                )}
+                <div className="card-footer">
+                  <div className="card-actions">🤍 💬 ✈️</div>
+                  <div className="card-price">{item.price.toLocaleString()}원</div>
+                  <div className="card-stock">
+                    {item.stock <= 0 ? '🚫 품절된 상품입니다' : `남은 수량: ${item.stock}개`}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </>
       )}
 
       {currentScreen === 'Payment' && selectedProduct && (
-        <div className="content">
-          <h1 className="header-title">결제 진행 💳</h1>
-          
-          <div className="selected-info-box">
-            <h2 className="selected-product-name">{selectedProduct.name}</h2>
-            <h2 className="selected-product-price">{selectedProduct.price.toLocaleString()}원</h2>
-          </div>
+        <div className="payment-wrapper">
+          <div className="payment-title">결제 방식 선택</div>
+          <div className="payment-product">{selectedProduct.name}</div>
+          <div className="payment-price">{selectedProduct.price.toLocaleString()}원</div>
 
-          <p className="sub-title">결제 방식을 선택해주세요</p>
+          <button className="pay-btn kakao" onClick={requestKakaoPay} disabled={loading}>
+            {loading ? '준비 중...' : '카카오페이'}
+          </button>
+          <button className="pay-btn toss" onClick={requestTossPay} disabled={loading}>
+            {loading ? '준비 중...' : '토스페이'}
+          </button>
+          <button className="pay-btn card" onClick={handleDirectPay} disabled={loading}>
+            일반 카드결제
+          </button>
 
-          <div className="button-row">
-            <button className="pay-button kakao" onClick={requestKakaoPay} disabled={loading}>
-              {loading ? '준비 중...' : '💬 카카오페이'}
-            </button>
-            <button className="pay-button toss" onClick={requestTossPay} disabled={loading}>
-              {loading ? '준비 중...' : '🔵 토스페이'}
-            </button>
-            <button className="pay-button card" onClick={handleDirectPay} disabled={loading}>
-              🏷️ 카드결제
-            </button>
-          </div>
-
-          <button className="cancel-button" onClick={handleReset}>
-            취소하고 처음으로
+          <button className="back-btn" onClick={() => { setSelectedProduct(null); setCurrentScreen('Home'); }}>
+            취소하고 돌아가기
           </button>
         </div>
       )}
 
       {currentScreen === 'Success' && (
-        <div className="content">
+        <div className="payment-wrapper">
           <div className="success-emoji">🎉</div>
-          <h1 className="header-title">결제 완료!</h1>
-          <p className="sub-title">자판기에서 상품이 배출됩니다.</p>
-          <button className="home-button" onClick={handleReset}>
+          <div className="payment-title">결제가 완료되었습니다!</div>
+          <p style={{ color: '#8E8E8E', marginBottom: '30px' }}>자판기에서 상품을 꺼내주세요.</p>
+          <button className="pay-btn card" onClick={() => { setSelectedProduct(null); setCurrentScreen('Home'); }}>
             홈으로 돌아가기
           </button>
         </div>

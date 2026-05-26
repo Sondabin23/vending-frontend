@@ -2,87 +2,113 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #F9F9FB;
+  background-color: #FAFAFA; /* 인스타그램 특유의 연한 회색 배경 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .container {
   display: flex;
-  justify-content: center;
-  min-height: 100vh;
-  font-family: sans-serif;
-}
-
-.content {
-  width: 100%;
-  max-width: 800px;
-  padding: 20px;
-  display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 100vh;
+}
+
+/* 상단 헤더 (인스타그램 로고 바 느낌) */
+.header {
+  width: 100%;
+  background: #FFF;
+  border-bottom: 1px solid #DBDBDB;
+  padding: 15px 0;
   text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .header-title {
-  font-size: 32px;
-  font-weight: 900;
-  margin: 20px 0 10px;
-  color: #2D3142;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  color: #262626;
+  font-style: italic;
 }
 
-.sub-title {
-  font-size: 18px;
-  color: #9094A6;
-  margin-bottom: 30px;
-}
-
-.category-wrapper {
+/* 🌟 카테고리 = 인스타그램 스토리 스타일 */
+.story-wrapper {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
+  gap: 15px;
+  padding: 20px;
   width: 100%;
+  max-width: 800px;
+  overflow-x: auto;
+  background: #FAFAFA;
   justify-content: center;
+  box-sizing: border-box;
 }
 
-.category-button {
-  padding: 10px 20px;
-  border-radius: 25px;
-  background-color: #FFF;
-  border: 1px solid #E0E5EC;
+.story-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  color: #9094A6;
-  transition: 0.3s;
+  gap: 5px;
 }
 
-.category-button-active {
-  background-color: #FF6B6B;
-  border-color: #FF6B6B;
-  color: #FFF;
+.story-ring {
+  padding: 3px;
+  border-radius: 50%;
+  background: #DBDBDB; /* 기본 회색 링 */
+  transition: all 0.3s ease;
 }
 
+.story-ring.active {
+  /* 선택 시 인스타그램 그라데이션 컬러 */
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.story-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #FFF;
+  border: 2px solid #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #262626;
+}
+
+.story-text {
+  font-size: 12px;
+  color: #262626;
+  font-weight: 500;
+}
+
+/* 🌟 상품 목록 = 인스타그램 피드 게시물 스타일 */
 .grid-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 30px;
   justify-content: center;
+  padding: 10px 20px 50px;
+  max-width: 900px;
 }
 
 .product-card {
-  background-color: #FFF;
-  width: 200px;
-  padding: 20px;
-  border-radius: 20px;
-  box-shadow: 0 8px 15px rgba(140, 146, 172, 0.15);
+  background: #FFF;
+  border: 1px solid #DBDBDB;
+  border-radius: 8px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
   cursor: pointer;
-  position: relative;
   transition: transform 0.2s;
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
 }
 
 .sold-out-card {
@@ -90,128 +116,137 @@ body {
   cursor: not-allowed;
 }
 
-/* 좌측 상단 카테고리 뱃지 */
-.category-badge {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  background-color: #F0F2F5;
-  padding: 5px 10px;
-  border-radius: 10px;
+/* 피드 상단 프로필 영역 */
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #EFEFEF;
+  gap: 10px;
+}
+
+.card-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #EFEFEF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 12px;
-  font-weight: 700;
-  color: #4F5D75;
-}
-
-/* 🌟 우측 하단 재고 수량 뱃지 추가 */
-.stock-badge {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  background-color: #E2E8F0;
-  padding: 5px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #4F5D75;
-}
-
-.product-name {
-  font-size: 18px;
-  font-weight: 800;
-  margin-top: 30px;
-  color: #2D3142;
-}
-
-.product-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: #FF6B6B;
-  margin: 10px 0;
-}
-
-.sold-out-text {
-  color: red;
   font-weight: bold;
-  margin: 0;
 }
 
-.selected-info-box {
-  background-color: #FFF;
+.card-username {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* 피드 이미지 (상품명) 영역 */
+.card-image {
+  height: 200px;
+  background: #FAFAFA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #262626;
+}
+
+/* 피드 하단 본문 영역 (겹침 문제 해결!) */
+.card-footer {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-actions {
+  font-size: 20px;
+  letter-spacing: 10px;
+  margin-bottom: 5px;
+}
+
+.card-price {
+  font-weight: 800;
+  font-size: 16px;
+  color: #262626;
+}
+
+.card-stock {
+  font-size: 14px;
+  color: #8E8E8E;
+}
+
+.sold-out-card .card-stock {
+  color: #ED4956; /* 인스타그램 에러/하트 레드 */
+  font-weight: bold;
+}
+
+/* 결제 화면 UI */
+.payment-wrapper {
+  background: #FFF;
+  border: 1px solid #DBDBDB;
+  border-radius: 8px;
   padding: 40px;
-  border-radius: 25px;
-  margin-bottom: 40px;
+  text-align: center;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 10px 20px rgba(140, 146, 172, 0.1);
+  margin-top: 50px;
 }
 
-.selected-product-name {
+.payment-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  color: #262626;
+}
+
+.payment-product {
   font-size: 24px;
   font-weight: 800;
-  margin: 0 0 10px 0;
-  color: #2D3142;
+  margin-bottom: 10px;
 }
 
-.selected-product-price {
-  font-size: 24px;
-  color: #FF6B6B;
-  font-weight: 900;
-  margin: 0;
+.payment-price {
+  color: #0095F6; /* 인스타그램 블루 */
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 40px;
 }
 
-.button-row {
-  display: flex;
-  gap: 15px;
+.pay-btn {
+  display: block;
   width: 100%;
-  max-width: 600px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.pay-button {
-  flex: 1 1 150px;
-  padding: 20px;
-  border-radius: 15px;
+  padding: 15px;
+  border-radius: 8px;
   border: none;
-  font-size: 18px;
-  font-weight: 800;
+  font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+  color: #FFF;
   transition: opacity 0.2s;
 }
 
-.pay-button:active {
-  opacity: 0.8;
-}
+.pay-btn:active { opacity: 0.7; }
+.pay-btn.kakao { background: #FEE500; color: #000; }
+.pay-btn.toss { background: #3182F6; }
+.pay-btn.card { background: #262626; }
 
-.pay-button.kakao { background-color: #FEE500; color: #000; }
-.pay-button.toss { background-color: #3182F6; color: #FFF; }
-.pay-button.card { background-color: #FF6B6B; color: #FFF; }
-
-.cancel-button {
-  margin-top: 30px;
+.back-btn {
   background: none;
   border: none;
-  font-size: 18px;
-  color: #9094A6;
-  text-decoration: underline;
+  color: #0095F6;
+  font-weight: 600;
   cursor: pointer;
+  margin-top: 20px;
+  font-size: 14px;
 }
 
 .success-emoji {
   font-size: 80px;
-  margin: 0 0 20px 0;
-}
-
-.home-button {
-  margin-top: 40px;
-  background-color: #2D3142;
-  color: #FFF;
-  padding: 20px 40px;
-  border-radius: 15px;
-  border: none;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
+  margin-bottom: 20px;
 }
