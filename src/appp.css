@@ -1,4 +1,8 @@
 /* App.css */
+* {
+  box-sizing: border-box; /* 모든 요소의 패딩/테두리를 크기에 포함 (깨짐 방지 핵심) */
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -14,87 +18,147 @@ body {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
+  align-items: center;
 }
 
+/* 상단 헤더 */
 .header {
   width: 100%;
   background: #FFF;
   border-bottom: 1px solid #DBDBDB;
-  padding: 10px 0;
+  padding: 15px 0;
   text-align: center;
-  flex-shrink: 0;
+  flex-shrink: 0; /* 헤더 높이 찌그러짐 방지 */
 }
 
-.header-title { font-size: 20px; font-weight: bold; margin: 0; color: #262626; font-style: italic; }
+.header-title { 
+  font-size: 24px; 
+  font-weight: 900; 
+  margin: 0; 
+  color: #262626; 
+  font-style: italic; 
+}
 
+/* 중앙 컨텐츠 영역 */
 .content {
-  flex-grow: 1;
+  width: 100%;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  overflow: hidden;
-  box-sizing: border-box;
+  flex-grow: 1;
+  padding: 10px 15px;
+  overflow: hidden; /* 영역 밖으로 나가는 것 숨김 */
 }
 
-/* 카테고리 (스토리) */
+/* 🌟 카테고리 (스토리 스타일) - 찌그러짐 완벽 해결 */
 .story-wrapper {
   display: flex;
-  gap: 10px;
-  padding-bottom: 10px;
+  gap: 15px;
+  padding: 10px 0 20px;
   justify-content: center;
-  flex-shrink: 0;
+  flex-shrink: 0; /* 세로 공간이 부족해도 카테고리는 안 찌그러지게 고정 */
 }
 
-/* 🌟 그리드: 무조건 4개가 한 화면에 나오도록 배치 */
+.story-item { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  cursor: pointer; 
+  gap: 5px; 
+}
+
+.story-ring {
+  padding: 3px;
+  border-radius: 50%;
+  background: #DBDBDB;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.story-ring.active {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.story-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #FFF;
+  border: 2px solid #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #262626;
+}
+
+.story-text { 
+  font-size: 12px; 
+  font-weight: 600; 
+  color: #262626; 
+}
+
+/* 🌟 그리드 컨테이너 */
 .grid-container {
   display: flex;
-  flex-wrap: wrap; /* 모바일에서 2x2 가능하게 유연성 제공 */
-  gap: 10px;
+  flex-wrap: wrap; 
+  gap: 15px;
   justify-content: center;
-  align-content: stretch;
+  align-content: stretch; /* 카드들이 남는 세로 공간을 꽉 채우도록 설정 */
   flex-grow: 1;
-  overflow: hidden;
   width: 100%;
+  overflow: hidden;
 }
 
+/* 상품 카드 (기본: PC 등 큰 화면에서 1줄에 4개) */
 .product-card {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 8px;
-  /* 가로: 4개가 들어가도록 23% 내외, 세로: 남은 공간 꽉 채우기 */
-  width: calc(23%); 
-  height: 100%; 
+  width: calc(25% - 12px); /* 4개 배치 */
+  height: calc(100% - 10px); /* 1줄이 화면 꽉 차게 */
+  max-height: 450px; /* 너무 길어지는 것 방지 */
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  box-sizing: border-box;
+  transition: transform 0.2s;
+  overflow: hidden; /* 글자 튀어나옴 방지 */
 }
 
-/* 🌟 핵심: 좁은 화면(모바일)에선 2x2로 전환하여 짤림 방지 */
-@media (max-width: 768px) {
-  .product-card {
-    width: calc(48%);
-    height: 48%; /* 2행 2열 */
-  }
+/* 카드 내부 요소 */
+.card-header { padding: 10px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #EFEFEF; flex-shrink: 0; }
+.card-avatar { width: 24px; height: 24px; border-radius: 50%; background: #EFEFEF; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.card-username { font-size: 12px; font-weight: 600; color: #262626; }
+
+.card-image { 
+  flex-grow: 1; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 18px; 
+  font-weight: 800; 
+  background: #FAFAFA; 
+  color: #262626;
+  text-align: center;
+  padding: 10px;
 }
 
-/* 카드 내부 요소 반응형 처리 */
-.card-header { padding: 5px 8px; display: flex; align-items: center; gap: 5px; border-bottom: 1px solid #eee; }
-.card-avatar { width: 18px; height: 18px; border-radius: 50%; background: #eee; font-size: 9px; display: flex; align-items: center; justify-content: center; }
-.card-username { font-size: 10px; font-weight: bold; }
-.card-image { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; background: #fafafa; }
-.card-footer { padding: 5px 8px; }
-.card-price { font-size: 12px; font-weight: bold; }
-.card-stock { font-size: 9px; color: #888; }
+.card-footer { padding: 10px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.card-actions { font-size: 18px; letter-spacing: 5px; color: #262626; margin-bottom: 2px; }
+.card-price { font-size: 15px; font-weight: 800; color: #262626; }
+.card-stock { font-size: 12px; color: #8E8E8E; }
+.sold-out-card { opacity: 0.5; }
+.sold-out-card .card-stock { color: #ED4956; font-weight: bold; }
 
-/* 페이징 */
+/* 🌟 하단 페이징 버튼 */
 .pagination-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
-  padding: 10px 0;
+  gap: 20px;
+  padding: 15px 0 5px;
   flex-shrink: 0;
 }
 
@@ -102,23 +166,98 @@ body {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 50%;
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #262626;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.page-info { font-size: 14px; font-weight: 600; color: #8E8E8E; }
 
-/* 결제 화면 */
+/* 🌟 누락되었던 결제 화면(Payment) 완벽 복구 */
 .payment-wrapper {
   background: #FFF;
   border: 1px solid #DBDBDB;
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 40px 30px;
   text-align: center;
-  width: 80%;
-  max-width: 350px;
+  width: 90%;
+  max-width: 400px;
   margin: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
-.pay-btn { display: block; width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: #FFF; }
-.pay-btn.kakao { background: #FEE500; color: #000; }
+
+.payment-title { font-size: 20px; font-weight: bold; margin-bottom: 25px; color: #262626; }
+.payment-product { font-size: 24px; font-weight: 900; margin-bottom: 10px; color: #262626; }
+.payment-price { font-size: 22px; font-weight: bold; color: #0095F6; margin-bottom: 35px; }
+
+.pay-btn { 
+  display: block; 
+  width: 100%; 
+  padding: 15px; 
+  border-radius: 8px; 
+  border: none; 
+  font-weight: 800; 
+  font-size: 16px; 
+  cursor: pointer; 
+  margin-bottom: 12px; 
+  color: #FFF; 
+  transition: opacity 0.2s; 
+}
+.pay-btn:active { opacity: 0.7; }
+.pay-btn.kakao { background: #FEE500; color: #191919; }
 .pay-btn.toss { background: #3182F6; }
 .pay-btn.card { background: #262626; }
+
+.back-btn { 
+  background: none; 
+  border: 1px solid #DBDBDB; 
+  padding: 12px; 
+  border-radius: 8px; 
+  color: #262626; 
+  font-weight: 600; 
+  cursor: pointer; 
+  margin-top: 15px; 
+  font-size: 14px; 
+  width: 100%;
+}
+
+.success-emoji { font-size: 70px; margin-bottom: 20px; }
+
+/* ==========================================
+   📱 모바일 & 태블릿 반응형 (이 부분이 사진 속 겹침 문제를 해결합니다!)
+   ========================================== */
+
+@media (max-width: 768px) {
+  .product-card {
+    /* 모바일에서는 정확히 2x2(2열 2행)로 배치 */
+    width: calc(50% - 8px); 
+    height: calc(50% - 8px); 
+    max-height: none;
+  }
+  
+  /* 동그라미 크기 축소 */
+  .story-circle { width: 48px; height: 48px; font-size: 11px; }
+  .story-text { font-size: 11px; }
+  
+  /* 카드 안의 글자 크기도 화면에 맞게 축소하여 겹침 방지 */
+  .card-header { padding: 8px; }
+  .card-image { font-size: 16px; padding: 5px; }
+  .card-footer { padding: 8px; gap: 2px; }
+  .card-actions { font-size: 14px; letter-spacing: 3px; }
+  .card-price { font-size: 14px; }
+  .card-stock { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  /* 아주 작은 스마트폰용 여백 조정 */
+  .header-title { font-size: 20px; }
+  .payment-wrapper { padding: 30px 20px; }
+  .payment-product { font-size: 20px; }
+  .payment-price { font-size: 18px; }
+}
