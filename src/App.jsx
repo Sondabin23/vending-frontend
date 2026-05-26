@@ -1,33 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
-
-// 🎨 스타일 객체 전체 정의
-const styles = {
-  container: { display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F9F9FB', fontFamily: 'sans-serif', margin: 0, padding: 0 },
-  content: { width: '100%', maxWidth: '800px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
-  headerTitle: { fontSize: '32px', fontWeight: '900', margin: '20px 0 10px', color: '#2D3142' },
-  subTitle: { fontSize: '18px', color: '#9094A6', marginBottom: '30px' },
-  categoryWrapper: { display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '20px', width: '100%', justifyContent: 'center' },
-  categoryButton: { padding: '10px 20px', borderRadius: '25px', backgroundColor: '#FFF', border: '1px solid #E0E5EC', cursor: 'pointer', fontSize: '16px', fontWeight: '600', color: '#9094A6', transition: '0.3s' },
-  categoryButtonActive: { backgroundColor: '#FF6B6B', borderColor: '#FF6B6B', color: '#FFF' },
-  gridContainer: { display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' },
-  productCard: { backgroundColor: '#FFF', width: '200px', padding: '20px', borderRadius: '20px', boxShadow: '0 8px 15px rgba(140, 146, 172, 0.15)', cursor: 'pointer', position: 'relative', transition: 'transform 0.2s' },
-  soldOutCard: { opacity: 0.5, cursor: 'not-allowed' },
-  categoryBadge: { position: 'absolute', top: '15px', left: '15px', backgroundColor: '#F0F2F5', padding: '5px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: '700', color: '#4F5D75' },
-  productName: { fontSize: '18px', fontWeight: '800', marginTop: '30px', color: '#2D3142' },
-  productPrice: { fontSize: '18px', fontWeight: '700', color: '#FF6B6B', margin: '10px 0' },
-  soldOutText: { color: 'red', fontWeight: 'bold', margin: 0 },
-  selectedInfoBox: { backgroundColor: '#FFF', padding: '40px', borderRadius: '25px', marginBottom: '40px', width: '100%', maxWidth: '400px', boxShadow: '0 10px 20px rgba(140, 146, 172, 0.1)' },
-  selectedProductName: { fontSize: '24px', fontWeight: '800', margin: '0 0 10px 0', color: '#2D3142' },
-  selectedProductPrice: { fontSize: '24px', color: '#FF6B6B', fontWeight: '900', margin: 0 },
-  buttonRow: { display: 'flex', gap: '15px', width: '100%', maxWidth: '600px', flexWrap: 'wrap', justifyContent: 'center' }, 
-  payButton: { flex: '1 1 150px', padding: '20px', borderRadius: '15px', border: 'none', fontSize: '18px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' },
-  cancelButton: { marginTop: '30px', background: 'none', border: 'none', fontSize: '18px', color: '#9094A6', textDecoration: 'underline', cursor: 'pointer' },
-  successEmoji: { fontSize: '80px', margin: '0 0 20px 0' },
-  homeButton: { marginTop: '40px', backgroundColor: '#2D3142', color: '#FFF', padding: '20px 40px', borderRadius: '15px', border: 'none', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' },
-  adminSection: { marginTop: '50px', padding: '20px', backgroundColor: '#E0E5EC', borderRadius: '15px', width: '100%' },
-  adminInput: { padding: '10px', margin: '5px', borderRadius: '5px', border: '1px solid #ccc' }
-};
+import './appp.css'; // 🌟 분리한 CSS 파일 임포트
 
 const CATEGORIES = ['전체', '포토카드', '키링', '인형'];
 const BACKEND_URL = 'https://vending-backend-qlb7.onrender.com';
@@ -57,7 +30,7 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  // 🔄 2. 결제 완료 후 DB 재고 차감 및 기기 배출 요청 함수 (slotNumber 추가됨)
+  // 🔄 2. 결제 완료 후 DB 재고 차감 및 기기 배출 요청 함수
   const processPurchaseDB = async (productId, slotNumber) => {
     try {
       await fetch(`${BACKEND_URL}/api/purchase`, {
@@ -66,10 +39,10 @@ export default function App() {
         body: JSON.stringify({ 
           product_id: productId,
           machine_id: MACHINE_ID,
-          slot_number: slotNumber // 🌟 프론트에서 알고 있는 슬롯 번호를 직접 서버로 전송
+          slot_number: slotNumber 
         })
       });
-      fetchProducts(); // 재고 갱신
+      fetchProducts(); 
     } catch (e) {
       console.error("DB 재고 차감 실패:", e);
     }
@@ -86,7 +59,7 @@ export default function App() {
 
     if (path.includes('/success')) {
       const pendingProductId = localStorage.getItem('pending_product_id');
-      const pendingSlotNumber = localStorage.getItem('pending_slot_number'); // 🌟 로컬 스토리지에서 슬롯 번호 가져오기
+      const pendingSlotNumber = localStorage.getItem('pending_slot_number'); 
 
       if (paymentKey) {
         confirmTossPayment(paymentKey, orderId, amount, pendingProductId, pendingSlotNumber);
@@ -140,7 +113,7 @@ export default function App() {
   const requestKakaoPay = async () => {
     setLoading(true);
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
-    localStorage.setItem('pending_slot_number', selectedProduct.slot_number); // 🌟 결제 전 슬롯 번호 저장
+    localStorage.setItem('pending_slot_number', selectedProduct.slot_number); 
     const DOMAIN = window.location.origin; 
     try {
       const response = await fetch(`${BACKEND_URL}/api/payment/ready`, {
@@ -173,7 +146,7 @@ export default function App() {
   const requestTossPay = async () => {
     setLoading(true);
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
-    localStorage.setItem('pending_slot_number', selectedProduct.slot_number); // 🌟 결제 전 슬롯 번호 저장
+    localStorage.setItem('pending_slot_number', selectedProduct.slot_number); 
     const DOMAIN = window.location.origin;
 
     try {
@@ -196,7 +169,7 @@ export default function App() {
 
   const handleDirectPay = async () => {
     setLoading(true);
-    await processPurchaseDB(selectedProduct.product_id, selectedProduct.slot_number); // 🌟 슬롯 번호 같이 넘김
+    await processPurchaseDB(selectedProduct.product_id, selectedProduct.slot_number); 
     setCurrentScreen('Success');
     setLoading(false);
   };
@@ -240,23 +213,22 @@ export default function App() {
     }
   };
 
-  // 🌟 DB의 category 값을 그대로 사용하여 상품 필터링
   const filteredGoods = selectedCategory === '전체' 
     ? products 
     : products.filter(item => item.category === selectedCategory);
 
   return (
-    <div style={styles.container}>
+    <div className="container">
       {currentScreen === 'Home' && (
-        <div style={styles.content}>
-          <h1 style={styles.headerTitle}>✨ 굿즈 자판기 ✨</h1>
-          <p style={styles.subTitle}>원하시는 굿즈를 선택해주세요</p>
+        <div className="content">
+          <h1 className="header-title">✨ 굿즈 자판기 ✨</h1>
+          <p className="sub-title">원하시는 굿즈를 선택해주세요</p>
           
-          <div style={styles.categoryWrapper}>
+          <div className="category-wrapper">
             {CATEGORIES.map(cat => (
               <button 
                 key={cat} 
-                style={selectedCategory === cat ? { ...styles.categoryButton, ...styles.categoryButtonActive } : styles.categoryButton}
+                className={`category-button ${selectedCategory === cat ? 'category-button-active' : ''}`}
                 onClick={() => setSelectedCategory(cat)}
               >
                 {cat}
@@ -264,75 +236,74 @@ export default function App() {
             ))}
           </div>
 
-          <div style={styles.gridContainer}>
+          <div className="grid-container">
             {filteredGoods.map(item => (
               <div 
                 key={item.product_id} 
-                style={item.stock <= 0 ? { ...styles.productCard, ...styles.soldOutCard } : styles.productCard}
+                className={`product-card ${item.stock <= 0 ? 'sold-out-card' : ''}`}
                 onClick={() => handleSelectProduct(item)}
               >
-                {/* 🌟 뱃지에 DB의 category 값 출력 */}
-                <div style={styles.categoryBadge}>{item.category}</div>
-                <h3 style={styles.productName}>{item.name}</h3>
-                <p style={styles.productPrice}>{item.price.toLocaleString()}원</p>
-                {item.stock <= 0 && <p style={styles.soldOutText}>품절</p>}
+                <div className="category-badge">{item.category}</div>
+                <h3 className="product-name">{item.name}</h3>
+                <p className="product-price">{item.price.toLocaleString()}원</p>
+                {item.stock <= 0 && <p className="sold-out-text">품절</p>}
               </div>
             ))}
           </div>
 
-          <div style={styles.adminSection}>
-            <h3 style={{marginTop: 0}}>🛠 상품 DB 등록 (관리자)</h3>
+          <div className="admin-section">
+            <h3 className="admin-title">🛠 상품 DB 등록 (관리자)</h3>
             <form onSubmit={handleAddProduct}>
-              <input style={styles.adminInput} placeholder="슬롯(key,doll,photo)" value={newProduct.slot_number} onChange={(e) => setNewProduct({...newProduct, slot_number: e.target.value})} required/>
-              <input style={styles.adminInput} placeholder="상품명" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} required/>
-              <input style={styles.adminInput} type="number" placeholder="가격" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} required/>
-              <input style={styles.adminInput} type="number" placeholder="재고" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} required/>
-              <select style={styles.adminInput} value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}>
+              <input className="admin-input" placeholder="슬롯(key,doll,photo)" value={newProduct.slot_number} onChange={(e) => setNewProduct({...newProduct, slot_number: e.target.value})} required/>
+              <input className="admin-input" placeholder="상품명" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} required/>
+              <input className="admin-input" type="number" placeholder="가격" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} required/>
+              <input className="admin-input" type="number" placeholder="재고" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} required/>
+              <select className="admin-input" value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}>
                 <option value="포토카드">포토카드</option>
                 <option value="키링">키링</option>
                 <option value="인형">인형</option>
               </select>
-              <button type="submit" style={{padding: '10px 20px', borderRadius: '5px', cursor: 'pointer'}}>DB 저장</button>
+              <button type="submit" className="admin-submit-btn">DB 저장</button>
             </form>
           </div>
         </div>
       )}
 
       {currentScreen === 'Payment' && selectedProduct && (
-        <div style={styles.content}>
-          <h1 style={styles.headerTitle}>결제 진행 💳</h1>
+        <div className="content">
+          <h1 className="header-title">결제 진행 💳</h1>
           
-          <div style={styles.selectedInfoBox}>
-            <h2 style={styles.selectedProductName}>{selectedProduct.name}</h2>
-            <h2 style={styles.selectedProductPrice}>{selectedProduct.price.toLocaleString()}원</h2>
+          <div className="selected-info-box">
+            <h2 className="selected-product-name">{selectedProduct.name}</h2>
+            <h2 className="selected-product-price">{selectedProduct.price.toLocaleString()}원</h2>
           </div>
 
-          <p style={styles.subTitle}>결제 방식을 선택해주세요</p>
+          <p className="sub-title">결제 방식을 선택해주세요</p>
 
-          <div style={styles.buttonRow}>
-            <button style={{ ...styles.payButton, backgroundColor: '#FEE500', color: '#000' }} onClick={requestKakaoPay} disabled={loading}>
+          <div className="button-row">
+            <button className="pay-button kakao" onClick={requestKakaoPay} disabled={loading}>
               {loading ? '준비 중...' : '💬 카카오페이'}
             </button>
-            <button style={{ ...styles.payButton, backgroundColor: '#3182F6', color: '#FFF' }} onClick={requestTossPay} disabled={loading}>
+            <button className="pay-button toss" onClick={requestTossPay} disabled={loading}>
               {loading ? '준비 중...' : '🔵 토스페이'}
             </button>
-            <button style={{ ...styles.payButton, backgroundColor: '#FF6B6B', color: '#FFF' }} onClick={handleDirectPay} disabled={loading}>
+            <button className="pay-button card" onClick={handleDirectPay} disabled={loading}>
               🏷️ 카드결제
             </button>
           </div>
 
-          <button style={styles.cancelButton} onClick={handleReset}>
+          <button className="cancel-button" onClick={handleReset}>
             취소하고 처음으로
           </button>
         </div>
       )}
 
       {currentScreen === 'Success' && (
-        <div style={styles.content}>
-          <div style={styles.successEmoji}>🎉</div>
-          <h1 style={styles.headerTitle}>결제 완료!</h1>
-          <p style={styles.subTitle}>자판기에서 상품이 배출됩니다.</p>
-          <button style={styles.homeButton} onClick={handleReset}>
+        <div className="content">
+          <div className="success-emoji">🎉</div>
+          <h1 className="header-title">결제 완료!</h1>
+          <p className="sub-title">자판기에서 상품이 배출됩니다.</p>
+          <button className="home-button" onClick={handleReset}>
             홈으로 돌아가기
           </button>
         </div>
