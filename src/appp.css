@@ -90,11 +90,25 @@ body {
   cursor: not-allowed;
 }
 
+/* 좌측 상단 카테고리 뱃지 */
 .category-badge {
   position: absolute;
   top: 15px;
   left: 15px;
   background-color: #F0F2F5;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4F5D75;
+}
+
+/* 🌟 우측 하단 재고 수량 뱃지 추가 */
+.stock-badge {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background-color: #E2E8F0;
   padding: 5px 10px;
   border-radius: 10px;
   font-size: 12px;
@@ -200,35 +214,4 @@ body {
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;
-}
-
-.admin-section {
-  margin-top: 50px;
-  padding: 20px;
-  background-color: #E0E5EC;
-  border-radius: 15px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.admin-title {
-  margin-top: 0;
-}
-
-.admin-input {
-  padding: 10px;
-  margin: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-}
-
-.admin-submit-btn {
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #2D3142;
-  color: white;
-  border: none;
-  font-weight: bold;
 }

@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
-import './appp.css'; // 🌟 분리한 CSS 파일 임포트
+import './appp.css'; 
 
 const CATEGORIES = ['전체', '포토카드', '키링', '인형'];
 const BACKEND_URL = 'https://vending-backend-qlb7.onrender.com';
-const MACHINE_ID = 'VENDING_01'; // 🌟 현재 자판기의 고유 식별 ID
+const MACHINE_ID = 'VENDING_01'; 
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Home');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [loading, setLoading] = useState(false);
-  
   const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
 
-  // 🔄 1. DB에서 상품 목록 가져오기
+  // 🔄 DB에서 상품 목록 가져오기
   const fetchProducts = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/products`);
@@ -30,7 +28,7 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  // 🔄 2. 결제 완료 후 DB 재고 차감 및 기기 배출 요청 함수
+  // 🔄 결제 완료 후 DB 재고 차감 및 기기 배출 요청 함수
   const processPurchaseDB = async (productId, slotNumber) => {
     try {
       await fetch(`${BACKEND_URL}/api/purchase`, {
@@ -186,33 +184,6 @@ export default function App() {
     setSelectedCategory('전체');
   };
 
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newProduct,
-          price: parseInt(newProduct.price),
-          stock: parseInt(newProduct.stock)
-        })
-      });
-
-      const result = await response.json(); 
-
-      if (response.ok) {
-        alert('✅ 상품이 성공적으로 등록되었습니다!');
-        setNewProduct({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
-        fetchProducts(); 
-      } else {
-        alert(`❌ 등록 실패: ${result.error || '알 수 없는 DB 오류'}`);
-      }
-    } catch (e) {
-      alert(`통신 실패: 백엔드 서버에 연결할 수 없습니다. (${e.message})`);
-    }
-  };
-
   const filteredGoods = selectedCategory === '전체' 
     ? products 
     : products.filter(item => item.category === selectedCategory);
@@ -243,28 +214,20 @@ export default function App() {
                 className={`product-card ${item.stock <= 0 ? 'sold-out-card' : ''}`}
                 onClick={() => handleSelectProduct(item)}
               >
+                {/* 좌측 상단: 카테고리 뱃지 */}
                 <div className="category-badge">{item.category}</div>
+                
                 <h3 className="product-name">{item.name}</h3>
                 <p className="product-price">{item.price.toLocaleString()}원</p>
-                {item.stock <= 0 && <p className="sold-out-text">품절</p>}
+                
+                {/* 재고가 없으면 품절 표시, 있으면 우측 하단에 재고 수량 뱃지 표시 */}
+                {item.stock <= 0 ? (
+                  <p className="sold-out-text">품절</p>
+                ) : (
+                  <div className="stock-badge">남은 수량: {item.stock}개</div>
+                )}
               </div>
             ))}
-          </div>
-
-          <div className="admin-section">
-            <h3 className="admin-title">🛠 상품 DB 등록 (관리자)</h3>
-            <form onSubmit={handleAddProduct}>
-              <input className="admin-input" placeholder="슬롯(key,doll,photo)" value={newProduct.slot_number} onChange={(e) => setNewProduct({...newProduct, slot_number: e.target.value})} required/>
-              <input className="admin-input" placeholder="상품명" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} required/>
-              <input className="admin-input" type="number" placeholder="가격" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} required/>
-              <input className="admin-input" type="number" placeholder="재고" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} required/>
-              <select className="admin-input" value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}>
-                <option value="포토카드">포토카드</option>
-                <option value="키링">키링</option>
-                <option value="인형">인형</option>
-              </select>
-              <button type="submit" className="admin-submit-btn">DB 저장</button>
-            </form>
           </div>
         </div>
       )}
