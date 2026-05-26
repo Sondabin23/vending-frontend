@@ -187,7 +187,7 @@ export default function App() {
       
       {/* 고정 헤더 */}
       <div className="header">
-        <h1 className="header-title">Vending.Machine</h1>
+        <h1 className="header-title">JWD_Vending_Machine</h1>
       </div>
 
       {currentScreen === 'Home' && (

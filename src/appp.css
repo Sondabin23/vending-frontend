@@ -4,25 +4,24 @@ body {
   padding: 0;
   background-color: #FAFAFA;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden; /* 전체 화면 스크롤 차단 (키오스크 모드 유지) */
+  overflow: hidden; /* 전체 화면 스크롤 절대 차단 */
 }
 
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100vh; 
-  height: 100dvh; /* 모바일 브라우저 하단 바를 고려한 동적 높이 */
+  height: 100vh;
+  height: 100dvh;
 }
 
-/* 상단 헤더 */
 .header {
   width: 100%;
   background: #FFF;
   border-bottom: 1px solid #DBDBDB;
   padding: 15px 0;
   text-align: center;
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .header-title {
@@ -33,97 +32,73 @@ body {
   font-style: italic;
 }
 
-/* 중앙 컨텐츠 영역 */
 .content {
   width: 100%;
-  max-width: 800px;
-  padding: 15px 20px 20px;
+  max-width: 1000px; /* 상품 4개를 나란히 두기 위해 최대 너비 살짝 확대 */
+  padding: 15px 20px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  flex-grow: 1; 
-  overflow: hidden; 
+  flex-grow: 1;
+  overflow: hidden;
 }
 
-/* 인스타그램 스토리 (카테고리) */
+/* 카테고리 (스토리 스타일) */
 .story-wrapper {
   display: flex;
   gap: 15px;
   padding: 10px 10px 20px;
   width: 100%;
-  background: #FAFAFA;
   justify-content: center;
   flex-shrink: 0;
-  overflow-x: auto;
-  scrollbar-width: none; /* 파이어폭스 스크롤바 숨김 */
-}
-.story-wrapper::-webkit-scrollbar {
-  display: none; /* 크롬/사파리 스크롤바 숨김 */
 }
 
-.story-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  gap: 5px;
-}
+.story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; gap: 5px; }
 
 .story-ring {
   padding: 3px;
   border-radius: 50%;
   background: #DBDBDB;
-  transition: all 0.3s ease;
 }
-
 .story-ring.active {
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
 }
 
 .story-circle {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background-color: #FFF;
   border: 2px solid #FFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 800;
-  color: #262626;
-}
-
-.story-text {
   font-size: 12px;
-  color: #262626;
-  font-weight: 500;
+  font-weight: 800;
 }
 
-/* 인스타그램 피드 (상품 목록) */
+.story-text { font-size: 11px; font-weight: 500; }
+
+/* 🌟 그리드: 한 줄에 4개 배치 */
 .grid-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 15px;
   justify-content: center;
-  align-content: flex-start; 
+  align-content: space-around;
   width: 100%;
-  flex-grow: 1; 
-  overflow-y: auto; /* 화면이 작을 때 내부 스크롤 허용 */
-  padding-bottom: 20px;
-  scrollbar-width: none; 
-}
-.grid-container::-webkit-scrollbar {
-  display: none; 
+  flex-grow: 1;
+  overflow: hidden;
 }
 
 .product-card {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 8px;
-  width: 250px; 
+  /* 🌟 4개 배치: 가로 23%, 높이 80% (화면에 꽉 차게) */
+  width: calc(23%);
+  height: 80%;
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -131,125 +106,39 @@ body {
   box-sizing: border-box;
 }
 
-.product-card:hover {
-  transform: translateY(-3px);
-}
+.product-card:hover { transform: translateY(-3px); }
+.sold-out-card { opacity: 0.5; cursor: not-allowed; }
 
-.sold-out-card {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.card-header { padding: 8px 10px; border-bottom: 1px solid #EFEFEF; display: flex; align-items: center; gap: 8px; }
+.card-avatar { width: 20px; height: 20px; border-radius: 50%; background: #EFEFEF; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.card-username { font-size: 11px; font-weight: 600; }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  border-bottom: 1px solid #EFEFEF;
-  gap: 10px;
-}
+.card-image { flex-grow: 1; background: #FAFAFA; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; }
 
-.card-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #EFEFEF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-}
+.card-footer { padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+.card-price { font-weight: 800; font-size: 14px; }
+.card-stock { font-size: 11px; color: #8E8E8E; }
 
-.card-username {
-  font-size: 13px;
-  font-weight: 600;
-  color: #262626;
-}
-
-.card-image {
-  height: 150px;
-  background: #FAFAFA;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 800;
-  color: #262626;
-}
-
-.card-footer {
-  padding: 12px 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-}
-
-.card-actions {
-  font-size: 18px;
-  letter-spacing: 10px;
-  margin-bottom: 2px;
-}
-
-.card-price {
-  font-weight: 800;
-  font-size: 15px;
-  color: #262626;
-}
-
-.card-stock {
-  font-size: 13px;
-  color: #8E8E8E;
-}
-
-.sold-out-card .card-stock {
-  color: #ED4956;
-  font-weight: bold;
-}
-
-/* 하단 페이지 넘김 리모컨 */
+/* 하단 페이지 넘김 */
 .pagination-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 20px;
-  padding: 15px 0 5px;
+  padding: 10px 0;
   flex-shrink: 0;
-  margin-top: auto; 
 }
 
 .page-btn {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  font-size: 20px;
-  color: #262626;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.page-btn:hover:not(:disabled) {
-  background: #EFEFEF;
-}
-
-.page-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-size: 14px;
-  font-weight: 600;
-  color: #8E8E8E;
-}
-
-/* 결제 화면 UI */
+/* 결제/성공 화면 */
 .payment-wrapper {
   background: #FFF;
   border: 1px solid #DBDBDB;
@@ -259,117 +148,19 @@ body {
   width: 90%;
   max-width: 400px;
   margin: auto;
-  box-sizing: border-box;
-}
-
-.payment-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 30px;
-  color: #262626;
-}
-
-.payment-product {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.payment-price {
-  color: #0095F6;
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 40px;
 }
 
 .pay-btn {
   display: block;
   width: 100%;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
   border: none;
   font-weight: bold;
-  font-size: 16px;
   cursor: pointer;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   color: #FFF;
-  transition: opacity 0.2s;
-  box-sizing: border-box;
 }
-
-.pay-btn:active { opacity: 0.7; }
 .pay-btn.kakao { background: #FEE500; color: #000; }
 .pay-btn.toss { background: #3182F6; }
 .pay-btn.card { background: #262626; }
-
-.back-btn {
-  background: none;
-  border: none;
-  color: #0095F6;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 20px;
-  font-size: 14px;
-}
-
-.success-emoji {
-  font-size: 80px;
-  margin-bottom: 20px;
-}
-
-/* ==========================================
-   📱 모바일 & 태블릿 반응형 (미디어 쿼리)
-   ========================================== */
-
-/* 태블릿 (화면 너비 768px 이하) */
-@media (max-width: 768px) {
-  .product-card {
-    width: calc(50% - 10px); /* 2열 배치 */
-  }
-}
-
-/* 스마트폰 (화면 너비 480px 이하) */
-@media (max-width: 480px) {
-  .header-title {
-    font-size: 20px;
-  }
-  
-  .story-circle {
-    width: 50px;
-    height: 50px;
-    font-size: 12px;
-  }
-
-  .grid-container {
-    gap: 15px;
-  }
-
-  .product-card {
-    width: calc(50% - 7.5px); /* 모바일에서도 2열 유지 */
-  }
-
-  .card-image {
-    height: 120px;
-    font-size: 16px;
-  }
-
-  .card-price {
-    font-size: 14px;
-  }
-
-  .card-actions {
-    font-size: 15px;
-  }
-
-  .payment-wrapper {
-    padding: 30px 20px;
-  }
-
-  .payment-product {
-    font-size: 20px;
-  }
-
-  .payment-price {
-    font-size: 18px;
-  }
-}
