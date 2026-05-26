@@ -2,27 +2,25 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #FAFAFA; /* 인스타그램 특유의 연한 회색 배경 */
+  background-color: #FAFAFA;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden; /* 🌟 웹 브라우저 전체 스크롤 완벽 차단 (키오스크 모드) */
 }
 
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
+  height: 100vh; /* 화면 높이를 100%로 고정 */
 }
 
-/* 상단 헤더 (인스타그램 로고 바 느낌) */
 .header {
   width: 100%;
   background: #FFF;
   border-bottom: 1px solid #DBDBDB;
   padding: 15px 0;
   text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  flex-shrink: 0; /* 헤더 크기 찌그러짐 방지 */
 }
 
 .header-title {
@@ -33,17 +31,26 @@ body {
   font-style: italic;
 }
 
-/* 🌟 카테고리 = 인스타그램 스토리 스타일 */
+.content {
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex-grow: 1; /* 남은 화면 공간 꽉 채우기 */
+  overflow: hidden; 
+}
+
 .story-wrapper {
   display: flex;
   gap: 15px;
-  padding: 20px;
+  padding: 10px 20px 20px;
   width: 100%;
-  max-width: 800px;
-  overflow-x: auto;
   background: #FAFAFA;
   justify-content: center;
-  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .story-item {
@@ -57,12 +64,11 @@ body {
 .story-ring {
   padding: 3px;
   border-radius: 50%;
-  background: #DBDBDB; /* 기본 회색 링 */
+  background: #DBDBDB;
   transition: all 0.3s ease;
 }
 
 .story-ring.active {
-  /* 선택 시 인스타그램 그라데이션 컬러 */
   background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
 }
 
@@ -86,21 +92,21 @@ body {
   font-weight: 500;
 }
 
-/* 🌟 상품 목록 = 인스타그램 피드 게시물 스타일 */
 .grid-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 30px;
+  gap: 20px;
   justify-content: center;
-  padding: 10px 20px 50px;
-  max-width: 900px;
+  align-content: flex-start; /* 상품이 적어도 위에서부터 차곡차곡 정렬 */
+  width: 100%;
+  flex-grow: 1; /* 남은 영역을 피드가 모두 차지하게 설정 */
 }
 
 .product-card {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 8px;
-  width: 280px;
+  width: 250px; /* 카드 크기를 살짝 줄여서 한 화면에 잘 보이게 조정 */
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -116,18 +122,17 @@ body {
   cursor: not-allowed;
 }
 
-/* 피드 상단 프로필 영역 */
 .card-header {
   display: flex;
   align-items: center;
-  padding: 12px 15px;
+  padding: 10px 15px;
   border-bottom: 1px solid #EFEFEF;
   gap: 10px;
 }
 
 .card-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #EFEFEF;
   display: flex;
@@ -138,51 +143,92 @@ body {
 }
 
 .card-username {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #262626;
 }
 
-/* 피드 이미지 (상품명) 영역 */
 .card-image {
-  height: 200px;
+  height: 150px;
   background: #FAFAFA;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: #262626;
 }
 
-/* 피드 하단 본문 영역 (겹침 문제 해결!) */
 .card-footer {
-  padding: 15px;
+  padding: 12px 15px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  text-align: left;
 }
 
 .card-actions {
-  font-size: 20px;
+  font-size: 18px;
   letter-spacing: 10px;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .card-price {
   font-weight: 800;
-  font-size: 16px;
+  font-size: 15px;
   color: #262626;
 }
 
 .card-stock {
-  font-size: 14px;
+  font-size: 13px;
   color: #8E8E8E;
 }
 
 .sold-out-card .card-stock {
-  color: #ED4956; /* 인스타그램 에러/하트 레드 */
+  color: #ED4956;
   font-weight: bold;
+}
+
+/* 🌟 하단 페이징 (페이지 넘김) 리모컨 UI */
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 15px 0;
+  flex-shrink: 0;
+  margin-top: auto; /* 버튼들을 항상 화면 맨 아래로 밀어냄 */
+}
+
+.page-btn {
+  background: #FFF;
+  border: 1px solid #DBDBDB;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  font-size: 20px;
+  color: #262626;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #EFEFEF;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8E8E8E;
 }
 
 /* 결제 화면 UI */
@@ -194,7 +240,7 @@ body {
   text-align: center;
   width: 100%;
   max-width: 400px;
-  margin-top: 50px;
+  margin: auto;
 }
 
 .payment-title {
@@ -211,7 +257,7 @@ body {
 }
 
 .payment-price {
-  color: #0095F6; /* 인스타그램 블루 */
+  color: #0095F6;
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 40px;
