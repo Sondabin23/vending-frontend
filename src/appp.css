@@ -4,127 +4,96 @@ body {
   padding: 0;
   background-color: #FAFAFA;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden; /* 전체 화면 스크롤 절대 차단 */
+  overflow: hidden; /* 🌟 무조건 스크롤 차단 */
+  height: 100vh;
+  height: 100dvh;
 }
 
 .container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  height: 100vh;
-  height: 100dvh;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .header {
   width: 100%;
   background: #FFF;
   border-bottom: 1px solid #DBDBDB;
-  padding: 15px 0;
+  padding: 10px 0;
   text-align: center;
   flex-shrink: 0;
 }
 
-.header-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 0;
-  color: #262626;
-  font-style: italic;
-}
+.header-title { font-size: 20px; font-weight: bold; margin: 0; color: #262626; font-style: italic; }
 
 .content {
-  width: 100%;
-  max-width: 1000px; /* 상품 4개를 나란히 두기 위해 최대 너비 살짝 확대 */
-  padding: 15px 20px;
-  box-sizing: border-box;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  flex-grow: 1;
+  padding: 10px;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* 카테고리 (스토리 스타일) */
+/* 카테고리 (스토리) */
 .story-wrapper {
   display: flex;
-  gap: 15px;
-  padding: 10px 10px 20px;
-  width: 100%;
+  gap: 10px;
+  padding-bottom: 10px;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; gap: 5px; }
-
-.story-ring {
-  padding: 3px;
-  border-radius: 50%;
-  background: #DBDBDB;
-}
-.story-ring.active {
-  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-}
-
-.story-circle {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: #FFF;
-  border: 2px solid #FFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.story-text { font-size: 11px; font-weight: 500; }
-
-/* 🌟 그리드: 한 줄에 4개 배치 */
+/* 🌟 그리드: 무조건 4개가 한 화면에 나오도록 배치 */
 .grid-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+  flex-wrap: wrap; /* 모바일에서 2x2 가능하게 유연성 제공 */
+  gap: 10px;
   justify-content: center;
-  align-content: space-around;
-  width: 100%;
+  align-content: stretch;
   flex-grow: 1;
   overflow: hidden;
+  width: 100%;
 }
 
 .product-card {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 8px;
-  /* 🌟 4개 배치: 가로 23%, 높이 80% (화면에 꽉 차게) */
-  width: calc(23%);
-  height: 80%;
+  /* 가로: 4개가 들어가도록 23% 내외, 세로: 남은 공간 꽉 채우기 */
+  width: calc(23%); 
+  height: 100%; 
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: transform 0.2s;
   box-sizing: border-box;
 }
 
-.product-card:hover { transform: translateY(-3px); }
-.sold-out-card { opacity: 0.5; cursor: not-allowed; }
+/* 🌟 핵심: 좁은 화면(모바일)에선 2x2로 전환하여 짤림 방지 */
+@media (max-width: 768px) {
+  .product-card {
+    width: calc(48%);
+    height: 48%; /* 2행 2열 */
+  }
+}
 
-.card-header { padding: 8px 10px; border-bottom: 1px solid #EFEFEF; display: flex; align-items: center; gap: 8px; }
-.card-avatar { width: 20px; height: 20px; border-radius: 50%; background: #EFEFEF; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-.card-username { font-size: 11px; font-weight: 600; }
+/* 카드 내부 요소 반응형 처리 */
+.card-header { padding: 5px 8px; display: flex; align-items: center; gap: 5px; border-bottom: 1px solid #eee; }
+.card-avatar { width: 18px; height: 18px; border-radius: 50%; background: #eee; font-size: 9px; display: flex; align-items: center; justify-content: center; }
+.card-username { font-size: 10px; font-weight: bold; }
+.card-image { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; background: #fafafa; }
+.card-footer { padding: 5px 8px; }
+.card-price { font-size: 12px; font-weight: bold; }
+.card-stock { font-size: 9px; color: #888; }
 
-.card-image { flex-grow: 1; background: #FAFAFA; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; }
-
-.card-footer { padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
-.card-price { font-weight: 800; font-size: 14px; }
-.card-stock { font-size: 11px; color: #8E8E8E; }
-
-/* 하단 페이지 넘김 */
+/* 페이징 */
 .pagination-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 15px;
   padding: 10px 0;
   flex-shrink: 0;
 }
@@ -133,34 +102,23 @@ body {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   cursor: pointer;
 }
 
-/* 결제/성공 화면 */
+/* 결제 화면 */
 .payment-wrapper {
   background: #FFF;
   border: 1px solid #DBDBDB;
   border-radius: 8px;
-  padding: 40px;
+  padding: 20px;
   text-align: center;
-  width: 90%;
-  max-width: 400px;
+  width: 80%;
+  max-width: 350px;
   margin: auto;
 }
-
-.pay-btn {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  margin-bottom: 10px;
-  color: #FFF;
-}
+.pay-btn { display: block; width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: #FFF; }
 .pay-btn.kakao { background: #FEE500; color: #000; }
 .pay-btn.toss { background: #3182F6; }
 .pay-btn.card { background: #262626; }
