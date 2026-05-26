@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadTossPayments } from '@tosspayments/payment-sdk';
 
+// 🎨 스타일 객체 전체 정의
 const styles = {
   container: { display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F9F9FB', fontFamily: 'sans-serif', margin: 0, padding: 0 },
   content: { width: '100%', maxWidth: '800px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
@@ -30,7 +31,7 @@ const styles = {
 
 const CATEGORIES = ['전체', '포토카드', '키링', '인형'];
 const BACKEND_URL = 'https://vending-backend-qlb7.onrender.com';
-const MACHINE_ID = 'VENDING_01'; 
+const MACHINE_ID = 'VENDING_01'; // 🌟 현재 자판기의 고유 식별 ID
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Home');
@@ -41,6 +42,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({ slot_number: '', name: '', price: '', stock: '', category: '포토카드' });
 
+  // 🔄 1. DB에서 상품 목록 가져오기
   const fetchProducts = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/products`);
@@ -55,22 +57,25 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  const processPurchaseDB = async (productId) => {
+  // 🔄 2. 결제 완료 후 DB 재고 차감 및 기기 배출 요청 함수 (slotNumber 추가됨)
+  const processPurchaseDB = async (productId, slotNumber) => {
     try {
       await fetch(`${BACKEND_URL}/api/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           product_id: productId,
-          machine_id: MACHINE_ID 
+          machine_id: MACHINE_ID,
+          slot_number: slotNumber // 🌟 프론트에서 알고 있는 슬롯 번호를 직접 서버로 전송
         })
       });
-      fetchProducts(); 
+      fetchProducts(); // 재고 갱신
     } catch (e) {
       console.error("DB 재고 차감 실패:", e);
     }
   };
 
+  // 🔄 URL 감지 및 결제 최종 승인 처리
   useEffect(() => {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
@@ -81,23 +86,28 @@ export default function App() {
 
     if (path.includes('/success')) {
       const pendingProductId = localStorage.getItem('pending_product_id');
+      const pendingSlotNumber = localStorage.getItem('pending_slot_number'); // 🌟 로컬 스토리지에서 슬롯 번호 가져오기
 
       if (paymentKey) {
-        confirmTossPayment(paymentKey, orderId, amount, pendingProductId);
+        confirmTossPayment(paymentKey, orderId, amount, pendingProductId, pendingSlotNumber);
       } else {
-        if (pendingProductId) processPurchaseDB(pendingProductId);
+        if (pendingProductId && pendingSlotNumber) {
+          processPurchaseDB(pendingProductId, pendingSlotNumber);
+        }
         setCurrentScreen('Success');
         localStorage.removeItem('pending_product_id');
+        localStorage.removeItem('pending_slot_number');
         window.history.pushState({}, '', '/'); 
       }
     } else if (path.includes('/cancel') || path.includes('/fail')) {
       alert("결제가 취소되었거나 실패했습니다.");
       localStorage.removeItem('pending_product_id');
+      localStorage.removeItem('pending_slot_number');
       window.history.pushState({}, '', '/');
     }
   }, []);
 
-  const confirmTossPayment = async (paymentKey, orderId, amount, pendingProductId) => {
+  const confirmTossPayment = async (paymentKey, orderId, amount, pendingProductId, pendingSlotNumber) => {
     setLoading(true);
     try {
       const response = await fetch(`${BACKEND_URL}/api/toss/confirm`, {
@@ -107,7 +117,9 @@ export default function App() {
       });
       
       if (response.ok) {
-        if (pendingProductId) await processPurchaseDB(pendingProductId); 
+        if (pendingProductId && pendingSlotNumber) {
+          await processPurchaseDB(pendingProductId, pendingSlotNumber); 
+        }
         setCurrentScreen('Success');
       } else {
         const result = await response.json();
@@ -120,6 +132,7 @@ export default function App() {
     } finally {
       setLoading(false);
       localStorage.removeItem('pending_product_id');
+      localStorage.removeItem('pending_slot_number');
       window.history.pushState({}, '', '/'); 
     }
   };
@@ -127,6 +140,7 @@ export default function App() {
   const requestKakaoPay = async () => {
     setLoading(true);
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
+    localStorage.setItem('pending_slot_number', selectedProduct.slot_number); // 🌟 결제 전 슬롯 번호 저장
     const DOMAIN = window.location.origin; 
     try {
       const response = await fetch(`${BACKEND_URL}/api/payment/ready`, {
@@ -159,6 +173,7 @@ export default function App() {
   const requestTossPay = async () => {
     setLoading(true);
     localStorage.setItem('pending_product_id', selectedProduct.product_id); 
+    localStorage.setItem('pending_slot_number', selectedProduct.slot_number); // 🌟 결제 전 슬롯 번호 저장
     const DOMAIN = window.location.origin;
 
     try {
@@ -181,7 +196,7 @@ export default function App() {
 
   const handleDirectPay = async () => {
     setLoading(true);
-    await processPurchaseDB(selectedProduct.product_id);
+    await processPurchaseDB(selectedProduct.product_id, selectedProduct.slot_number); // 🌟 슬롯 번호 같이 넘김
     setCurrentScreen('Success');
     setLoading(false);
   };
@@ -225,7 +240,7 @@ export default function App() {
     }
   };
 
-  // 🌟 핵심 변경: DB의 category 값을 그대로 사용하여 필터링
+  // 🌟 DB의 category 값을 그대로 사용하여 상품 필터링
   const filteredGoods = selectedCategory === '전체' 
     ? products 
     : products.filter(item => item.category === selectedCategory);
@@ -256,7 +271,7 @@ export default function App() {
                 style={item.stock <= 0 ? { ...styles.productCard, ...styles.soldOutCard } : styles.productCard}
                 onClick={() => handleSelectProduct(item)}
               >
-                {/* 🌟 뱃지에도 DB의 category 값이 바로 나오도록 수정 */}
+                {/* 🌟 뱃지에 DB의 category 값 출력 */}
                 <div style={styles.categoryBadge}>{item.category}</div>
                 <h3 style={styles.productName}>{item.name}</h3>
                 <p style={styles.productPrice}>{item.price.toLocaleString()}원</p>
